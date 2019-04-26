@@ -1,0 +1,28 @@
+import pygame
+from pygame.locals import *
+
+blue = 0, 191, 255
+
+
+resolution = 1920, 1080
+window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
+fullscreen = True
+pygame.display.set_caption('Kremlin Travel')
+working = True
+
+while working:
+    window.fill(blue)
+    pygame.display.update()
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            working = False
+        if event.type == KEYDOWN:
+            if event.key == K_F1:
+                if fullscreen:
+                    window: pygame.Surface = pygame.display.set_mode(resolution)
+                    fullscreen = False
+                else:
+                    window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
+                    fullscreen = True
+
+pygame.quit()
