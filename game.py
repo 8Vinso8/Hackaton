@@ -220,6 +220,6 @@ while working:
     if x < delay:
         x += 1
 
-    pygame.display.update()
+    pygame.display.flip()
 
 pygame.quit()
