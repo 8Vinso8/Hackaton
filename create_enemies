@@ -1,6 +1,0 @@
-for bullet in bullets:
-    for enemy in enemies.copy():
-        if collision(bullet.get_rect(), enemy.get_rect()):
-            enemies.remove(enemy)
-    if collision(bullet.get_rect(), player.get_rect()):
-        player.dmg(1)
