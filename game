@@ -2,9 +2,26 @@ import pygame
 from pygame.locals import *
 #self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
 
+is_next_move_left = True
 
 player_res = (93, 60)
 enemy_res = (60, 93)
+
+
+def move_all():
+    if Enemy.is_next_move_left:
+        if Enemy.enemies[0].get_x() - 70 >= 0:
+            for i in Enemy.enemies:
+                i.move(-10, 0)
+        else:
+            Enemy.is_next_move_left = False
+    else:
+        if Enemy.enemies[-1].get_x() + 10 <= resolution[0]:
+            for i in Enemy.enemies:
+                i.move(10, 0)
+        else:
+            Enemy.is_next_move_left = True
+
 
 class Thing:
     def __init__(self, pos, image, res):
@@ -33,6 +50,12 @@ class bullet(Thing):
         self.speed = speed
         super().__init__(pos, image)
 
+class Enemy(Thing):
+    enemies = list()
+
+    def __init__(self, pos, image, res):
+        Enemy.enemies.append(self)
+        super().__init__(pos, image, res)
 
 class Player(Thing):
     def __init__(self, pos, image, res, health, speed):
