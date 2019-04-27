@@ -36,7 +36,7 @@ class Thing:
         return self.position[1]
 
     def get_rect(self):
-        return pygame.Rect(self.position[0], self.position[1], self.resolution[0], self.position[1])
+        return pygame.Rect(self.position[0], self.position[1], self.resolution[0], self.resolution[1])
 
     def shoot(self):
         pass
@@ -76,7 +76,7 @@ fullscreen = True
 pygame.display.set_caption('Kremlin Travel')
 working = True
 bullets = list()
-player = Player([800, 700], 'player.png', player_res, 100, 5)
+player = Player([800, 700], 'player.png', player_res, 100, 10)
 while working:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -91,6 +91,21 @@ while working:
                     fullscreen = True
             if event.key == K_ESCAPE:
                 working = False
+    keys = pygame.key.get_pressed()
+    if keys[K_a]:
+        if not player.get_x() - 10 <= 0:
+            player.move(-10, 0)
+    if keys[K_d]:
+        if not player.get_x() + player.resolution[0] + 10 >= 1600:
+            player.move(10, 0)
+    if keys[K_w]:
+        if not player.get_y() - 5 <= 0:
+            player.move(0, -5)
+    if keys[K_s]:
+        if not player.get_y() + player.resolution[1] + 5 >= 900:
+            player.move(0, 5)
+    window.fill((0, 0, 0))
     pygame.draw.rect(window, blue, player.get_rect())
     pygame.display.update()
+    pygame.time.Clock().tick(60)
 pygame.quit()
