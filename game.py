@@ -107,6 +107,9 @@ class Player(Thing):
     def dmg(self, n):
         self.health -= n
 
+    def get_health(self):
+        return self.health
+
 
 enemies = [[], [], [], []]
 friendly_bullets = list()
@@ -219,7 +222,8 @@ while working:
 
     if x < delay:
         x += 1
-
+    if player.get_health() <= 0:
+        working = False  # Нужно захуярить обнуление очков а не выкл игры
     pygame.display.flip()
 
 pygame.quit()
