@@ -6,6 +6,7 @@ is_next_move_left = True
 
 player_res = (93, 60)
 enemy_res = (60, 93)
+bullet_res = (15, 48)
 
 
 def move_all():
@@ -27,7 +28,13 @@ class Thing:
     def __init__(self, pos, image, res):
         self.resolution = res
         self.position = pos  # (X, Y)
-        #self.image = pygame.image.load(image).convert()  # Image_name.png
+        self.image = pygame.image.load(image).convert()  # Image_name.png
+        self.image.set_colorkey((0, 0, 0))
+
+    def draw(self):
+        self.image_rect = self.image.get_rect(bottomright=(self.position[0] + self.resolution[0],
+                                                           self.position[1] + self.resolution[1]))
+        window.blit(self.image, self.image_rect)
 
     def get_x(self):
         return self.position[0]
@@ -38,9 +45,6 @@ class Thing:
     def get_rect(self):
         return pygame.Rect(self.position[0], self.position[1], self.resolution[0], self.resolution[1])
 
-    def shoot(self):
-        pass
-
     def move(self, x, y):  # X, y - перемещение по x и y
         self.position = (self.position[0] + x, self.position[1] + y)
 
@@ -48,7 +52,18 @@ class Thing:
 class bullet(Thing):
     def __init__(self, pos, image, speed):
         self.speed = speed
-        super().__init__(pos, image)
+        super().__init__(pos, image, bullet_res)
+
+    def move(self, x, y):  # X, y - перемещение по x и y
+        if self.get_y() < -50 or self.get_y() > 950:
+            bullets.pop(0)
+        else:
+            super().move(x, y)
+
+
+def shoot(pos, res):
+    bullets.append(bullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2), 'bullet.png', 5))
+
 
 class Enemy(Thing):
     enemies = list()
@@ -56,6 +71,7 @@ class Enemy(Thing):
     def __init__(self, pos, image, res):
         Enemy.enemies.append(self)
         super().__init__(pos, image, res)
+
 
 class Player(Thing):
     def __init__(self, pos, image, res, health):
@@ -91,6 +107,8 @@ while working:
                     fullscreen = True
             if event.key == K_ESCAPE:
                 working = False
+            if event.key == K_SPACE:
+                shoot(player.position, player.resolution)
     keys = pygame.key.get_pressed()
     if keys[K_a]:
         if not player.get_x() - 10 <= 0:
@@ -99,13 +117,17 @@ while working:
         if not player.get_x() + player.resolution[0] + 10 >= 1600:
             player.move(10, 0)
     if keys[K_w]:
-        if not player.get_y() - 5 <= 600:
+        if not player.get_y() - 5 <= 700:
             player.move(0, -5)
     if keys[K_s]:
         if not player.get_y() + player.resolution[1] + 5 >= 900:
             player.move(0, 5)
-    window.fill((0, 0, 0))
-    pygame.draw.rect(window, blue, player.get_rect())
+
+    window.fill((0, 0, 255))
+    player.draw()
+    for i in bullets:
+        i.draw()
+        i.move(0, -10)
     pygame.display.update()
     pygame.time.Clock().tick(60)
 pygame.quit()
