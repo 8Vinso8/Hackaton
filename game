@@ -1,13 +1,25 @@
-
 import pygame
 from pygame.locals import *
+#self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
 
+
+player_res = (93, 60)
+enemy_res = (60, 93)
 
 class Thing:
     def __init__(self, pos, image, res):
-        self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
+        self.resolution = res
         self.position = pos  # (X, Y)
-        self.image = pygame.image.load(image).convert()  # Image_name.png
+        #self.image = pygame.image.load(image).convert()  # Image_name.png
+
+    def get_x(self):
+        return self.position[0]
+
+    def get_y(self):
+        return self.position[1]
+
+    def get_rect(self):
+        return pygame.Rect(self.position[0], self.position[1], self.resolution[0], self.position[1])
 
     def shoot(self):
         pass
@@ -19,13 +31,13 @@ class Thing:
 class bullet(Thing):
     def __init__(self, pos, image, speed):
         self.speed = speed
-        super().__init(pos, image)
+        super().__init__(pos, image)
 
 
 class Player(Thing):
-    def __init__(self, pos, image, health):
+    def __init__(self, pos, image, res, health, speed):
         self.health = health
-        super().__init__(pos, image)
+        super().__init__(pos, image, res)
 
 
 def collision(rect1, rect2):
@@ -41,7 +53,7 @@ fullscreen = True
 pygame.display.set_caption('Kremlin Travel')
 working = True
 bullets = list()
-player = Player((800, 700), 'player.png', 100)
+player = Player([800, 700], 'player.png', player_res, 100, 5)
 while working:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -56,5 +68,6 @@ while working:
                     fullscreen = True
             if event.key == K_ESCAPE:
                 working = False
+    pygame.draw.rect(window, blue, player.get_rect())
     pygame.display.update()
 pygame.quit()
