@@ -3,7 +3,7 @@ from pygame.locals import *
 
 blue = 0, 191, 255
 
-
+# Hi girls
 resolution = 1920, 1080
 window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 fullscreen = True
