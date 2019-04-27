@@ -1,18 +1,48 @@
+
 import pygame
 from pygame.locals import *
 
+
+class Thing:
+    def __init__(self, pos, image, res):
+        self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
+        self.position = pos  # (X, Y)
+        self.image = pygame.image.load(image).convert()  # Image_name.png
+
+    def shoot(self):
+        pass
+
+    def move(self, x, y):  # X, y - перемещение по x и y
+        self.position = (self.position[0] + x, self.position[1] + y)
+
+
+class bullet(Thing):
+    def __init__(self, pos, image, speed):
+        self.speed = speed
+        super().__init(pos, image)
+
+
+class Player(Thing):
+    def __init__(self, pos, image, health):
+        self.health = health
+        super().__init__(pos, image)
+
+
+def collision(rect1, rect2):
+    return rect1.colliderect(rect2)
+
+
 blue = 0, 191, 255
 
-# Hi girls
-resolution = 1920, 1080
+
+resolution = 1600, 900
 window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 fullscreen = True
 pygame.display.set_caption('Kremlin Travel')
 working = True
-
+bullets = list()
+player = Player((800, 700), 'player.png', 100)
 while working:
-    window.fill(blue)
-    pygame.display.update()
     for event in pygame.event.get():
         if event.type == QUIT:
             working = False
@@ -24,5 +54,7 @@ while working:
                 else:
                     window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
                     fullscreen = True
-
+            if event.key == K_ESCAPE:
+                working = False
+    pygame.display.update()
 pygame.quit()
