@@ -1,12 +1,18 @@
 import pygame
 import random
+
 from pygame.locals import *
-#self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
+
+# self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
+
+pygame.mixer.pre_init(44100, 16, 2, 4096)
+pygame.init()
 
 is_next_move_left = True
-bullet_images = 'bullet1.png, bullet2.png'
+bullet_images = ['bullet1.png', 'bullet2.png']
 enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
-background_images = ['back1.png', 'back2.png', 'back3.png']
+background_images = {'back1.png', 'back2.png', 'back3.png'}
+
 player_res = (93, 60)
 enemy_res = (60, 93)
 bullet_res = (15, 48)
@@ -16,32 +22,22 @@ new_level = True
 
 
 def create_enemy(line, n):
-    if line == 1:
-        y = 0
+    y = 100 * line
+    x = 100 * n
+    enemies[line].append(Enemy((x, y), random.choice(enemy_images), enemy_res))
+
+
+def collision(rect1, rect2):
+    return rect1.colliderect(rect2)
+
+
+def shoot(pos, res, is_friendly):
+    if is_friendly:
+        friendly_bullets.append(FriendlyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2 - 90),
+                                               bullet_images[0]))
     else:
-        y = 100
-    x = 65 * n
-    Enemy((x, y), random.choice(enemy_images), enemy_res)
-
-
-def shoot(pos, res):
-    bullets.append(bullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2 - 90), 'bullet.png', 5))
-
-
-def move_all():
-    global is_next_move_left
-    if is_next_move_left:
-        if Enemy.enemies[0].get_x() - 10 >= 0:
-            for enemy in Enemy.enemies:
-                enemy.move(-10, 0)
-        else:
-            is_next_move_left = False
-    else:
-        if Enemy.enemies[-1].get_x() + 70 <= resolution[0]:
-            for enemy in Enemy.enemies:
-                enemy.move(10, 0)
-        else:
-            is_next_move_left = True
+        enemy_bullets.append(EnemyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2),
+                                         bullet_images[1]))
 
 
 class Thing:
@@ -69,24 +65,30 @@ class Thing:
         self.position = (self.position[0] + x, self.position[1] + y)
 
 
-class bullet(Thing):
-    def __init__(self, pos, image, speed):
-        self.speed = speed
+class FriendlyBullet(Thing):
+    def __init__(self, pos, image):
         super().__init__(pos, image, bullet_res)
 
     def move(self, x, y):  # X, y - перемещение по x и y
-        if self.get_y() < -50 or self.get_y() > 950:
-            bullets.pop(0)
+        if self.get_y() < -50:
+            friendly_bullets.pop(0)
+        else:
+            super().move(x, y)
+
+
+class EnemyBullet(Thing):
+    def __init__(self, pos, image, ):
+        super().__init__(pos, image, bullet_res)
+
+    def move(self, x, y):  # X, y - перемещение по x и y
+        if self.get_y() > 950:
+            enemy_bullets.pop(0)
         else:
             super().move(x, y)
 
 
 class Enemy(Thing):
-    enemies = list()
-
-    def __init__(self, pos, image, res):
-        Enemy.enemies.append(self)
-        super().__init__(pos, image, res)
+    pass
 
 
 class Player(Thing):
@@ -94,27 +96,27 @@ class Player(Thing):
         self.health = health
         super().__init__(pos, image, res)
 
+    def dmg(self, n):
+        self.health -= n
 
-def collision(rect1, rect2):
-    return rect1.colliderect(rect2)
 
-
+enemies = [[], [], [], []]
+friendly_bullets = list()
+enemy_bullets = list()
+delay = 10
+x = delay
 blue = 0, 191, 255
-
-
 resolution = 1600, 900
-window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 fullscreen = True
+working = True
+
+window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 pygame.display.set_caption('Kremlin Travel')
 
-working = True
-bullets = list()
-player = Player([800, 700], 'player.png', player_res, 100)
-background = Thing((0, 0), background_images[0], (1600, 900))
-enemy = Enemy((0, 0), 'enemy1.png', enemy_res)
-delay = 7
-x = delay
+player = Player([800, 700], 'player.png', player_res, 3)
+
 while working:
+    # Обработка нажатий
     for event in pygame.event.get():
         if event.type == QUIT:
             working = False
@@ -128,50 +130,86 @@ while working:
                     fullscreen = True
             if event.key == K_ESCAPE:
                 working = False
-            if event.key == K_SPACE:
-                if x == delay:
-                    shoot(player.position, player.resolution)
-                    x = 0
+            if event.key == K_SPACE and x == delay:
+                shoot(player.position, player.resolution, True)
+                x = 0
     keys = pygame.key.get_pressed()
     if keys[K_a]:
         if not player.get_x() - 10 <= 0:
-            player.move(-10, 0)
+            player.move(-20, 0)
     if keys[K_d]:
         if not player.get_x() + player.resolution[0] + 10 >= 1600:
-            player.move(10, 0)
+            player.move(20, 0)
     if keys[K_w]:
         if not player.get_y() - 5 <= 700:
-            player.move(0, -5)
+            player.move(0, -10)
     if keys[K_s]:
         if not player.get_y() + player.resolution[1] + 5 >= 900:
-            player.move(0, 5)
-    for i in bullets:
+            player.move(0, 10)
+
+    # Работа с фонами и этапами
+    if not any(enemies):
+        for i in range(random.randint(5, 10)):
+            create_enemy(0, i)
+        for i in range(random.randint(0, 10)):
+            create_enemy(1, i)
+        if back % 3 == 0:
+            if background_images:
+                background = Thing((0, 0), background_images.pop(), (1600, 900))
+            else:
+                print('ТУТ КРЧ БОССФАЙТ БУДЕТ ВСЕ ДЕЛА, А ПОКА КРАШ ПОСЛЕ 3 СТАДИИ')
+                working = False
+
+        back += 1
+    if not working:
+        break
+
+    # Начинается отрисовка
+    background.draw()
+
+    for i in friendly_bullets:
         i.draw()
-        for enemy in Enemy.enemies.copy():
-            if collision(i.get_rect(), enemy.get_rect()):
-                Enemy.enemies.remove(enemy)
+        for j in enemies.copy():
+            for enemy in j:
+                if collision(i.get_rect(), enemy.get_rect()):
+                    j.remove(enemy)
+                    if i in friendly_bullets:
+                        friendly_bullets.remove(i)
+        i.move(0, -25)
+
+    for i in enemy_bullets:
+        i.draw()
         if collision(i.get_rect(), player.get_rect()):
             player.dmg(1)
-        i.move(0, -25)
-    for i in Enemy.enemies:
-        i.draw()
+            enemy_bullets.remove(i)
+        i.move(0, 5)
+
+    for i in enemies:
+        for j in i:
+            j.draw()
+            if random.randint(0, 100) == 100:
+                shoot(j.position, j.resolution, False)
+
+    player.draw()
+
+    if any(enemies):
+        for i in enemies:
+            if is_next_move_left:
+                if all(list(_[0].get_x() - 10 >= 0 for _ in list(filter(lambda o: o, enemies)))):
+                    for enemy in i:
+                        enemy.move(-10, 0)
+                else:
+                    is_next_move_left = False
+            else:
+                if all(list(_[-1].get_x() + 70 <= resolution[0] for _ in list(filter(lambda o: o, enemies)))):
+                    for enemy in i:
+                        enemy.move(10, 0)
+                else:
+                    is_next_move_left = True
+
     if x < delay:
         x += 1
 
-    if new_level:
-        new_level = False
-        for i in range(4):
-            create_enemy(1, i)
-    if not Enemy.enemies:
-        back += 1
-        new_level = True
-
-    if back % 3 == 0 and new_level:
-        background = Thing((0, 0), background_images[back % 3], (1600, 900))
-    player.draw()
-    if Enemy.enemies:
-        move_all()
-    pygame.time.Clock().tick(60)
     pygame.display.update()
 
 pygame.quit()
