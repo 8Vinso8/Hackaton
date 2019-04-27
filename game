@@ -58,7 +58,7 @@ class Enemy(Thing):
         super().__init__(pos, image, res)
 
 class Player(Thing):
-    def __init__(self, pos, image, res, health, speed):
+    def __init__(self, pos, image, res, health):
         self.health = health
         super().__init__(pos, image, res)
 
@@ -76,7 +76,7 @@ fullscreen = True
 pygame.display.set_caption('Kremlin Travel')
 working = True
 bullets = list()
-player = Player([800, 700], 'player.png', player_res, 100, 10)
+player = Player([800, 700], 'player.png', player_res, 100)
 while working:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -99,7 +99,7 @@ while working:
         if not player.get_x() + player.resolution[0] + 10 >= 1600:
             player.move(10, 0)
     if keys[K_w]:
-        if not player.get_y() - 5 <= 0:
+        if not player.get_y() - 5 <= 600:
             player.move(0, -5)
     if keys[K_s]:
         if not player.get_y() + player.resolution[1] + 5 >= 900:
