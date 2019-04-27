@@ -3,7 +3,6 @@ import random
 
 from pygame.locals import *
 
-# self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
 
 pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
@@ -12,6 +11,14 @@ is_next_move_left = True
 bullet_images = ['bullet1.png', 'bullet2.png']
 enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
 background_images = {'back1.png', 'back2.png', 'back3.png'}
+
+# Загрузка звуков
+start_sound = pygame.mixer.Sound('start.wav')
+soundtrack = pygame.mixer.Sound('soundtrack.wav')
+soundtrack.set_volume(0.2)
+shoot_sound = pygame.mixer.Sound('shoot.wav')
+shoot_sound.set_volume(0.8)
+
 
 player_res = (93, 60)
 enemy_res = (60, 93)
@@ -35,6 +42,7 @@ def shoot(pos, res, is_friendly):
     if is_friendly:
         friendly_bullets.append(FriendlyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2 - 90),
                                                bullet_images[0]))
+        shoot_sound.play()
     else:
         enemy_bullets.append(EnemyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2),
                                          bullet_images[1]))
@@ -114,7 +122,9 @@ window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 pygame.display.set_caption('Kremlin Travel')
 
 player = Player([800, 700], 'player.png', player_res, 3)
-
+start_sound.play()
+pygame.time.delay(1000)
+soundtrack.play()
 while working:
     # Обработка нажатий
     for event in pygame.event.get():
