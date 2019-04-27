@@ -3,6 +3,9 @@ from pygame.locals import *
 #self.rect = pygame.Rect(pos[0], pos[1], res[0], res[1])
 
 is_next_move_left = True
+bullet_images = 'bullet1.png, bullet2.png'
+enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
+background_images = ['back1.png', 'back2.png', 'back3.png']
 
 player_res = (93, 60)
 enemy_res = (60, 93)
