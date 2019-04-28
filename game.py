@@ -7,9 +7,11 @@ pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
 
 is_next_move_left = True
+boss_image = 'boss.png'
 bullet_images = ['bullet1.png', 'bullet2.png']
 enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
 background_images = {'back1.png', 'back2.png', 'back3.png'}
+boss_fight_background = 'boss_fight_back.png'
 
 # Загрузка звуков
 start_sound = pygame.mixer.Sound('start.wav')
@@ -18,13 +20,14 @@ soundtrack.set_volume(0.2)
 shoot_sound = pygame.mixer.Sound('shoot.wav')
 shoot_sound.set_volume(0.8)
 
+boss_res = (120, 172)
 player_res = (93, 60)
 enemy_res = (60, 93)
 bullet_res = (15, 48)
 
 back = 0
 new_level = True
-score = 0 # В начало
+score = 0  # В начало
 green = (0, 255, 0)
 red = (255, 0, 0)
 score_font = pygame.font.SysFont(None, 75)
@@ -106,17 +109,6 @@ class Enemy(Thing):
     pass
 
 
-"""
-class Boss(Player):
-    def draw(self):
-        global angle
-        angle += 5
-        self.image_surf = pygame.transform.rotate(self.image, angle % 360)  # Image_name.png
-        self.image_surf.set_colorkey((0, 0, 0))
-        super().draw()
-"""
-
-
 class Player(Thing):
     def __init__(self, pos, image, res, health):
         self.health = health
@@ -129,6 +121,15 @@ class Player(Thing):
         return self.health
 
 
+class Boss(Player):
+    def draw(self):
+        global angle
+        angle += 30
+        self.image_surf = pygame.transform.rotate(self.image, angle % 360)  # Image_name.png
+        self.image_surf.set_colorkey((0, 0, 0))
+        super().draw()
+
+
 enemies = [[], [], [], []]
 friendly_bullets = list()
 enemy_bullets = list()
@@ -139,6 +140,7 @@ blue = 0, 191, 255
 resolution = 1600, 900
 fullscreen = True
 working = True
+is_boss_fight = False
 
 window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 pygame.display.set_caption('Kremlin Travel')
@@ -180,17 +182,18 @@ while working:
             player.move(0, 10)
 
     # Работа с фонами и этапами
-    if not any(enemies):
-        for i in range(random.randint(5, 10)):
-            create_enemy(0, i)
-        for i in range(random.randint(0, 10)):
-            create_enemy(1, i)
-        if back % 3 == 0:
-            if background_images:
+    if not any(enemies) and not is_boss_fight :
+        if back == 8:
+            boss = Boss([800, 50], boss_image, boss_res, 10)
+            is_boss_fight = True
+            background = Thing((0, 0), boss_fight_background, (1600, 900))
+        else:
+            if back % 3 == 0 and background_images:
                 background = Thing((0, 0), background_images.pop(), (1600, 900))
-            else:
-                print('ТУТ КРЧ БОССФАЙТ БУДЕТ ВСЕ ДЕЛА, А ПОКА КРАШ ПОСЛЕ 3 СТАДИИ')
-                working = False
+            for i in range(random.randint(1, 8)):
+                create_enemy(0, i)
+            for i in range(random.randint(0, 10)):
+                create_enemy(1, i)
 
         back += 1
     if not working:
@@ -208,6 +211,11 @@ while working:
                     if i in friendly_bullets:
                         friendly_bullets.remove(i)
                     score += 10
+        if is_boss_fight:
+            if collision(i.get_rect(), boss.get_rect()):
+                boss.dmg(1)
+                if i in friendly_bullets:
+                    friendly_bullets.remove(i)
         i.move(0, -25)
 
     for i in enemy_bullets:
@@ -222,7 +230,24 @@ while working:
             j.draw()
             if random.randint(0, 100) == 100:
                 shoot(j.position, j.resolution, False)
-
+    if is_boss_fight:
+        boss.draw()
+        if is_next_move_left:
+            if boss.get_x() - 30 >= 0:
+                boss.move(-30, 0)
+            else:
+                is_next_move_left = False
+        else:
+            if boss.get_x() + 150 <= resolution[0]:
+                boss.move(30, 0)
+            else:
+                is_next_move_left = True
+        if random.randint(0, 2) == 2:
+            shoot(boss.position, boss.resolution, False)
+            shoot((boss.position[0] + random.randint(-100, 100),
+                   boss.position[1]), boss.resolution, False)
+            shoot((boss.position[0] + random.randint(-100, 100),
+                   boss.position[1]), boss.resolution, False)
     player.draw()
 
     if any(enemies):
@@ -244,6 +269,10 @@ while working:
         x += 1
     if player.get_health() <= 0:
         working = False  # Нужно захуярить обнуление очков а не выкл игры
+    if is_boss_fight and boss.get_health() <= 0:
+        is_boss_fight = False
+        working = False
+        print('Игра пройдена флрлдфыпрафыршмф')
     score_image = score_font.render(score_text + str(score), 0, red)
     health_text = hp_text[:player.get_health()]
     hp_image = hp_font.render(health_text, 0, red)
