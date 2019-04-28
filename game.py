@@ -12,6 +12,7 @@ bullet_images = ['bullet1.png', 'bullet2.png']
 enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
 background_images = {'back1.png', 'back2.png', 'back3.png'}
 boss_fight_background = 'boss_fight_back.png'
+death_screen = 'death.png'
 
 # Загрузка звуков
 start_sound = pygame.mixer.Sound('start.wav')
@@ -34,6 +35,8 @@ score_font = pygame.font.SysFont(None, 75)
 score_text = 'SCORE:'
 hp_text = 'ФБК'
 hp_font = pygame.font.SysFont(None, 75)
+death_text = 'НАЖМИТЕ R ЧТОБЫ ЗАПЛАТИТЬ НОЛОГ ИЛИ ESC ЧТОБЫ ОТСИДЕТЬ'
+death_font = pygame.font.SysFont(None, 50)
 
 
 def create_enemy(line, n):
@@ -267,8 +270,38 @@ while working:
 
     if x < delay:
         x += 1
-    if player.get_health() <= 0:
-        working = False  # Нужно захуярить обнуление очков а не выкл игры
+        while player.get_health() <= 0:
+        soundtrack.stop()
+        back = 0
+        death_screen.draw()
+        death_image = death_font.render(death_text, 0, (128, 0, 128))
+        window.blit(death_image, (200, 450))
+        score_image = score_font.render(score_text + str(score), 0, (128, 0, 128))
+        window.blit(score_image, (200, 500))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                working = False
+            if event.type == KEYDOWN:
+                if event.key == K_F1:
+                    if fullscreen:
+                        window: pygame.Surface = pygame.display.set_mode(resolution)
+                        fullscreen = False
+                    else:
+                        window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
+                        fullscreen = True
+                if event.key == K_ESCAPE:
+                    working = False
+                    player.dmg(-1)
+                if event.key == K_r:
+                    player.dmg(-3)
+                    back = 0
+                    score = 0
+                    friendly_bullets.clear()
+                    enemy_bullets.clear()
+                    enemies = [[], [], [], []]
+                    background_images = {'back1.png', 'back2.png', 'back3.png'}
+                    soundtrack.play(-1)
     if is_boss_fight and boss.get_health() <= 0:
         is_boss_fight = False
         working = False
