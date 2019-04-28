@@ -27,10 +27,10 @@ new_level = True
 score = 0 # В начало
 green = (0, 255, 0)
 red = (255, 0, 0)
-score_font = pygame.font.SysFont(None, 10)
-score_text = 'ФБК'
-hp_text = 'HP:'
-hp_font = pygame.font.SysFont(None, 10)
+score_font = pygame.font.SysFont(None, 75)
+score_text = 'SCORE:'
+hp_text = 'ФБК'
+hp_font = pygame.font.SysFont(None, 75)
 
 
 def create_enemy(line, n):
@@ -207,7 +207,7 @@ while working:
                     j.remove(enemy)
                     if i in friendly_bullets:
                         friendly_bullets.remove(i)
-                    # score += 10
+                    score += 10
         i.move(0, -25)
 
     for i in enemy_bullets:
@@ -244,9 +244,9 @@ while working:
         x += 1
     if player.get_health() <= 0:
         working = False  # Нужно захуярить обнуление очков а не выкл игры
-    score_image = score_font.render(score_text + str(score), 0, green)
-    health_text = score_text[:player.get_health()]
-    hp_image = hp_font.render(hp_text + str(player.get_health()), 0, green)
+    score_image = score_font.render(score_text + str(score), 0, red)
+    health_text = hp_text[:player.get_health()]
+    hp_image = hp_font.render(health_text, 0, red)
     window.blit(score_image, (0, 800))
     window.blit(hp_image, (1400, 800))
     pygame.display.flip()
