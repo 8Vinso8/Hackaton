@@ -152,6 +152,7 @@ pygame.display.set_caption('Kremlin Travel')
 player = Player([800, 700], 'player.png', player_res, 3)
 start_sound.play()
 pygame.time.delay(1000)
+death_screen = Thing((0, 0), death_screen, (1600, 900))
 soundtrack.play()
 while working:
     # Обработка нажатий
@@ -171,6 +172,8 @@ while working:
             if event.key == K_SPACE and x == delay:
                 shoot(player.position, player.resolution, True)
                 x = 0
+            if event.key == K_f:
+                player.dmg(-100000)
     keys = pygame.key.get_pressed()
     if keys[K_a]:
         if not player.get_x() - 10 <= 0:
@@ -272,7 +275,7 @@ while working:
 
     if x < delay:
         x += 1
-        while player.get_health() <= 0:
+    while player.get_health() <= 0:
         soundtrack.stop()
         back = 0
         death_screen.draw()
@@ -304,6 +307,7 @@ while working:
                     enemies = [[], [], [], []]
                     background_images = {'back1.png', 'back2.png', 'back3.png'}
                     soundtrack.play(-1)
+
     if is_boss_fight and boss.get_health() <= 0:
         is_boss_fight = False
         working = False
@@ -317,3 +321,5 @@ while working:
     pygame.time.Clock().tick(120)
 
 pygame.quit()
+
+
