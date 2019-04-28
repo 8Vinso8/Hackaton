@@ -15,6 +15,7 @@ background_images = {'back1.png', 'back2.png', 'back3.png'}
 boss_fight_background = 'boss_fight_back.png'
 death_screen = 'death.png'
 boss_bullet = 'boss_bullet.png'
+menu_image = 'menu.png'
 
 # Загрузка звуков
 start_sound = pygame.mixer.Sound('start.wav')
@@ -43,6 +44,10 @@ hp_text = 'ФБК'
 hp_font = pygame.font.SysFont(None, 75)
 death_text = 'НАЖМИТЕ R ЧТОБЫ ЗАПЛАТИТЬ НОЛОГ ИЛИ ESC ЧТОБЫ ОТСИДЕТЬ'
 death_font = pygame.font.SysFont(None, 50)
+name_font = pygame.font.SysFont(None, 150)
+name_text = 'KREMLIN TRAVEL'
+button_text = 'НАЧАТЬ ИГРУ'
+button_font = pygame.font.SysFont(None, 40)
 
 
 def create_enemy(line, n):
@@ -167,6 +172,37 @@ is_boss_fight = False
 
 window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
 pygame.display.set_caption('Kremlin Travel')
+menu = True
+menu_image = Thing((0, 0), menu_image, (1600, 900))
+while menu:
+    menu_image.draw()
+    pygame.draw.rect(window, red, pygame.Rect(900, 200, 200, 50))
+    name_image = name_font.render(name_text, 10, red)
+    button_image = button_font.render(button_text, 10, (255, 255, 255))
+    window.blit(name_image, (600, 50))
+    window.blit(button_image, (900, 210))
+    pygame.display.flip()
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            working = False
+            menu = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            if collision(pygame.Rect(900, 200, 200, 50), pygame.Rect(*pos, 10, 10)):
+                menu = False
+        if event.type == KEYDOWN:
+            if event.key == K_F1:
+                if fullscreen:
+                    window: pygame.Surface = pygame.display.set_mode(resolution)
+                    fullscreen = False
+                else:
+                    window: pygame.Surface = pygame.display.set_mode(resolution, FULLSCREEN)
+                    fullscreen = True
+            if event.key == K_ESCAPE:
+                working = False
+                menu = False
+            if event.key == K_KP_ENTER:
+                menu = False
 
 player = Player([800, 700], 'player.png', player_res, 3)
 start_sound.play()
