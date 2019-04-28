@@ -27,6 +27,7 @@ player_res = (93, 60)
 enemy_res = (60, 93)
 bullet_res = (15, 48)
 
+difficult = 1
 back = 0
 new_level = True
 score = 0  # В начало
@@ -137,6 +138,7 @@ class Boss(Player):
 enemies = [[], [], [], []]
 friendly_bullets = list()
 enemy_bullets = list()
+bosses = []
 delay = 10
 x = delay
 angle = 0
@@ -178,7 +180,8 @@ while working:
                 enemies = [[], [], [], []]
                 enemy_bullets = list()
                 if is_boss_fight:
-                    boss.health = 0
+                    for boss in bosses:
+                        boss.health = 0
     keys = pygame.key.get_pressed()
     if keys[K_a]:
         if not player.get_x() - 10 <= 0:
@@ -194,19 +197,27 @@ while working:
             player.move(0, 10)
 
     # Работа с фонами и этапами
-    if not any(enemies) and not is_boss_fight :
-        if back == 8:
-            boss = Boss([800, 50], boss_image, boss_res, 10)
+    if not any(enemies) and not is_boss_fight:
+        if back == 9:
+            if difficult < 4:
+                for i in range(difficult):
+                    bosses.append(Boss([800 + random.randint(-400, 400), 50], boss_image, boss_res, 2 + difficult))
+            else:
+                for i in range(4):
+                    bosses.append(Boss([800 + random.randint(-400, 400), 50], boss_image, boss_res, 2 + difficult))
             is_boss_fight = True
             background = Thing((0, 0), boss_fight_background, (1600, 900))
         else:
             if back % 3 == 0 and background_images:
                 background = Thing((0, 0), background_images.pop(), (1600, 900))
-            for i in range(random.randint(1, 8)):
-                create_enemy(0, i)
-            for i in range(random.randint(0, 10)):
-                create_enemy(1, i)
-
+            if difficult < 4:
+                for i in range(difficult):
+                    for j in range(random.randint(1, 9)):
+                        create_enemy(i, j)
+            else:
+                for i in range(4):
+                    for j in range(random.randint(1, 12)):
+                        create_enemy(i, j)
         back += 1
     if not working:
         break
@@ -244,23 +255,21 @@ while working:
             if random.randint(0, 100) == 100:
                 shoot(j.position, j.resolution, False)
     if is_boss_fight:
-        boss.draw()
-        if is_next_move_left:
-            if boss.get_x() - 30 >= 0:
-                boss.move(-30, 0)
+        for boss in bosses:
+            boss.draw()
+            if is_next_move_left:
+                if boss.get_x() - 30 >= 0:
+                    boss.move(-30, 0)
+                else:
+                    is_next_move_left = False
             else:
-                is_next_move_left = False
-        else:
-            if boss.get_x() + 150 <= resolution[0]:
-                boss.move(30, 0)
-            else:
-                is_next_move_left = True
-        if random.randint(0, 4) == 4:
-            shoot(boss.position, boss.resolution, False)
-            shoot((boss.position[0] + random.randint(-100, 100),
-                   boss.position[1]), boss.resolution, False)
-            shoot((boss.position[0] + random.randint(-100, 100),
-                   boss.position[1]), boss.resolution, False)
+                if boss.get_x() + 150 <= resolution[0]:
+                    boss.move(30, 0)
+                else:
+                    is_next_move_left = True
+            if random.randint(0, 2 + difficult) == 0:
+                shoot((boss.position[0] + random.randint(-100, 100),
+                       boss.position[1]), boss.resolution, False)
     player.draw()
 
     if any(enemies):
@@ -313,13 +322,20 @@ while working:
                     background_images = {'back1.png', 'back2.png', 'back3.png'}
                     soundtrack.play(-1)
 
-    if is_boss_fight and boss.get_health() <= 0:
-        is_boss_fight = False
-        back = 0
-        friendly_bullets.clear()
-        enemy_bullets.clear()
-        enemies = [[], [], [], []]
-        background_images = {'back1.png', 'back2.png', 'back3.png'}
+    if is_boss_fight:
+        for boss in bosses:
+            if boss.get_health() == 0:
+                bosses.remove(boss)
+        if not bosses:
+            difficult += 1
+            is_boss_fight = False
+            back = 0
+            friendly_bullets.clear()
+            enemy_bullets.clear()
+            enemies = [[], [], [], []]
+            score += 200
+            player.dmg(-1)
+            background_images = {'back1.png', 'back2.png', 'back3.png'}
 
     score_image = score_font.render(score_text + str(score), 0, red)
     health_text = hp_text[:player.get_health()]
