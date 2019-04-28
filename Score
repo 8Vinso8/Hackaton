@@ -1,0 +1,13 @@
+score = 0 # В начало
+green = (0, 255, 0)
+red = (255, 0, 0)
+score_font = pygame.font.SysFont(None, 10)
+score_text = 'Дни заключения:'
+hp_text = 'HP:'
+hp_font = pygame.font.SysFont(None, 10)
+###################################### В цикл
+score_image = score_font.render(score_text + str(score), 0, green)
+hp_image = hp_font.render(hp_text + str(player.get_health()), 0, green)
+window.blit(score_image, (0, 800))
+window.blit(hp_image, (1400, 800))
+
