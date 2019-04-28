@@ -174,6 +174,11 @@ while working:
                 x = 0
             if event.key == K_f:
                 player.dmg(-100000)
+            if event.key == K_g:
+                enemies = [[], [], [], []]
+                enemy_bullets = list()
+                if is_boss_fight:
+                    boss.health = 0
     keys = pygame.key.get_pressed()
     if keys[K_a]:
         if not player.get_x() - 10 <= 0:
@@ -250,7 +255,7 @@ while working:
                 boss.move(30, 0)
             else:
                 is_next_move_left = True
-        if random.randint(0, 2) == 2:
+        if random.randint(0, 4) == 4:
             shoot(boss.position, boss.resolution, False)
             shoot((boss.position[0] + random.randint(-100, 100),
                    boss.position[1]), boss.resolution, False)
@@ -325,6 +330,3 @@ while working:
     pygame.time.Clock().tick(120)
 
 pygame.quit()
-
-
-
