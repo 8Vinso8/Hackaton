@@ -9,10 +9,12 @@ pygame.init()
 is_next_move_left = True
 boss_image = 'boss.png'
 bullet_images = ['bullet1.png', 'bullet2.png']
+vs_boss_bullet = 'vs_boss_bullet.png'
 enemy_images = ['enemy1.png', 'enemy2.png', 'enemy3.png', 'enemy4.png']
 background_images = {'back1.png', 'back2.png', 'back3.png'}
 boss_fight_background = 'boss_fight_back.png'
 death_screen = 'death.png'
+boss_bullet = 'boss_bullet.png'
 
 # Загрузка звуков
 start_sound = pygame.mixer.Sound('start.wav')
@@ -26,6 +28,8 @@ boss_res = (120, 172)
 player_res = (93, 60)
 enemy_res = (60, 93)
 bullet_res = (15, 48)
+vs_boss_bullet_res = (35, 49)
+boss_bullet_res = (20, 89)
 
 difficult = 1
 back = 0
@@ -52,10 +56,17 @@ def collision(rect1, rect2):
 
 
 def shoot(pos, res, is_friendly):
-    if is_friendly:
+    if is_friendly and is_boss_fight:
+        friendly_bullets.append(FriendlyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2 - 90),
+                                               vs_boss_bullet))
+        shoot_sound.play()
+    elif is_friendly:
         friendly_bullets.append(FriendlyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2 - 90),
                                                bullet_images[0]))
         shoot_sound.play()
+    elif not is_friendly and is_boss_fight:
+        enemy_bullets.append(EnemyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2),
+                                         boss_bullet))
     else:
         enemy_bullets.append(EnemyBullet((pos[0] + res[0] // 2, pos[1] + res[1] // 2),
                                          bullet_images[1]))
@@ -90,7 +101,10 @@ class Thing:
 
 class FriendlyBullet(Thing):
     def __init__(self, pos, image):
-        super().__init__(pos, image, bullet_res)
+        if not is_boss_fight:
+            super().__init__(pos, image, bullet_res)
+        else:
+            super().__init__(pos, image, vs_boss_bullet_res)
 
     def move(self, x, y):  # X, y - перемещение по x и y
         if self.get_y() < -50:
@@ -100,8 +114,11 @@ class FriendlyBullet(Thing):
 
 
 class EnemyBullet(Thing):
-    def __init__(self, pos, image, ):
-        super().__init__(pos, image, bullet_res)
+    def __init__(self, pos, image):
+        if is_boss_fight:
+            super().__init__(pos, image, boss_bullet_res)
+        else:
+            super().__init__(pos, image, bullet_res)
 
     def move(self, x, y):  # X, y - перемещение по x и y
         if self.get_y() > 950:
@@ -190,11 +207,11 @@ while working:
         if not player.get_x() + player.resolution[0] + 10 >= 1600:
             player.move(20, 0)
     if keys[K_w]:
-        if not player.get_y() - 5 <= 600:
-            player.move(0, -10)
+        if not player.get_y() - 5 <= 500:
+            player.move(0, -15)
     if keys[K_s]:
         if not player.get_y() + player.resolution[1] + 5 >= 900:
-            player.move(0, 10)
+            player.move(0, 15)
 
     # Работа с фонами и этапами
     if not any(enemies) and not is_boss_fight:
@@ -321,6 +338,8 @@ while working:
                     enemies = [[], [], [], []]
                     background_images = {'back1.png', 'back2.png', 'back3.png'}
                     soundtrack.play(-1)
+                    bosses.clear()
+                    is_boss_fight = False
 
     if is_boss_fight:
         for boss in bosses:
