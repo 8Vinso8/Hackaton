@@ -3,7 +3,6 @@ import random
 
 from pygame.locals import *
 
-
 pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
 
@@ -18,7 +17,6 @@ soundtrack = pygame.mixer.Sound('soundtrack.wav')
 soundtrack.set_volume(0.2)
 shoot_sound = pygame.mixer.Sound('shoot.wav')
 shoot_sound.set_volume(0.8)
-
 
 player_res = (93, 60)
 enemy_res = (60, 93)
@@ -52,13 +50,15 @@ class Thing:
     def __init__(self, pos, image, res):
         self.resolution = res
         self.position = pos  # (X, Y)
-        self.image = pygame.image.load(image).convert()  # Image_name.png
-        self.image.set_colorkey((0, 0, 0))
+        self.image = pygame.image.load(image).convert()
+        self.image_surf = self.image
+        self.image_surf.set_colorkey((0, 0, 0))
 
     def draw(self):
-        self.image_rect = self.image.get_rect(bottomright=(self.position[0] + self.resolution[0],
-                                                           self.position[1] + self.resolution[1]))
-        window.blit(self.image, self.image_rect)
+        self.image_rect = self.image_surf.get_rect(
+            bottomright=(self.position[0] + self.resolution[0],
+                         self.position[1] + self.resolution[1]))
+        window.blit(self.image_surf, self.image_rect)
 
     def get_x(self):
         return self.position[0]
@@ -99,6 +99,17 @@ class Enemy(Thing):
     pass
 
 
+"""
+class Boss(Player):
+    def draw(self):
+        global angle
+        angle += 5
+        self.image_surf = pygame.transform.rotate(self.image, angle % 360)  # Image_name.png
+        self.image_surf.set_colorkey((0, 0, 0))
+        super().draw()
+"""
+
+
 class Player(Thing):
     def __init__(self, pos, image, res, health):
         self.health = health
@@ -116,6 +127,7 @@ friendly_bullets = list()
 enemy_bullets = list()
 delay = 10
 x = delay
+angle = 0
 blue = 0, 191, 255
 resolution = 1600, 900
 fullscreen = True
@@ -154,7 +166,7 @@ while working:
         if not player.get_x() + player.resolution[0] + 10 >= 1600:
             player.move(20, 0)
     if keys[K_w]:
-        if not player.get_y() - 5 <= 700:
+        if not player.get_y() - 5 <= 600:
             player.move(0, -10)
     if keys[K_s]:
         if not player.get_y() + player.resolution[1] + 5 >= 900:
@@ -188,6 +200,7 @@ while working:
                     j.remove(enemy)
                     if i in friendly_bullets:
                         friendly_bullets.remove(i)
+                    # score += 10
         i.move(0, -25)
 
     for i in enemy_bullets:
@@ -225,5 +238,6 @@ while working:
     if player.get_health() <= 0:
         working = False  # Нужно захуярить обнуление очков а не выкл игры
     pygame.display.flip()
+    pygame.time.Clock().tick(120)
 
 pygame.quit()
