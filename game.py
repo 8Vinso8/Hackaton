@@ -20,6 +20,7 @@ soundtrack = pygame.mixer.Sound('soundtrack.wav')
 soundtrack.set_volume(0.2)
 shoot_sound = pygame.mixer.Sound('shoot.wav')
 shoot_sound.set_volume(0.8)
+hit_sound = pygame.mixer.Sound('hit.wav')
 
 boss_res = (120, 172)
 player_res = (93, 60)
@@ -225,6 +226,7 @@ while working:
         i.draw()
         if collision(i.get_rect(), player.get_rect()):
             player.dmg(1)
+            hit_sound.play()
             enemy_bullets.remove(i)
         i.move(0, 5)
 
