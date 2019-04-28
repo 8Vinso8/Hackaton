@@ -288,10 +288,11 @@ while working:
                         friendly_bullets.remove(i)
                     score += 10
         if is_boss_fight:
-            if collision(i.get_rect(), boss.get_rect()):
-                boss.dmg(1)
-                if i in friendly_bullets:
-                    friendly_bullets.remove(i)
+            for boss in bosses:
+                if collision(i.get_rect(), boss.get_rect()):
+                    boss.dmg(1)
+                    if i in friendly_bullets:
+                        friendly_bullets.remove(i)
         i.move(0, -25)
 
     for i in enemy_bullets:
