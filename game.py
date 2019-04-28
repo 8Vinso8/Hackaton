@@ -310,8 +310,12 @@ while working:
 
     if is_boss_fight and boss.get_health() <= 0:
         is_boss_fight = False
-        working = False
-        print('Игра пройдена флрлдфыпрафыршмф')
+        back = 0
+        friendly_bullets.clear()
+        enemy_bullets.clear()
+        enemies = [[], [], [], []]
+        background_images = {'back1.png', 'back2.png', 'back3.png'}
+
     score_image = score_font.render(score_text + str(score), 0, red)
     health_text = hp_text[:player.get_health()]
     hp_image = hp_font.render(health_text, 0, red)
@@ -321,5 +325,6 @@ while working:
     pygame.time.Clock().tick(120)
 
 pygame.quit()
+
 
 
